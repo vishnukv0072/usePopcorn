@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import "./index.css";
 import StarRating from "./star";
 
@@ -9,10 +9,18 @@ const average = (arr) =>
 export default function App() {
     const [query, setQuery] = useState("");
     const [movies, setMovies] = useState([]);
-    const [watched, setWatched] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const [selectedId, setSelectedId] = useState("tt1375666");
+    const [selectedId, setSelectedId] = useState(null);
+    // const [watched, setWatched] = useState([]);
+
+    //NOT ALLOWED
+    // const [watched, setWatched] = useState(JSON.parse(localStorage.getItem("watched")));
+
+    const [watched, setWatched] = useState(() => {
+        const stored = localStorage.getItem("watched");
+        return JSON.parse(stored);
+    });
 
     function onMovieSelect(id) {
         setSelectedId(selectedId === id ? null : id);
@@ -25,11 +33,16 @@ export default function App() {
     function handleAddWatch(movie) {
         setSelectedId(null);
         setWatched((w) => [...w, movie]);
+        // localStorage.setItem("watched", JSON.stringify([...watched, movie]));
     }
 
     function handleDeleteWatched(id) {
         setWatched((w) => w.filter((m) => m.imdbID !== id));
     }
+
+    useEffect(() => {
+        localStorage.setItem("watched", JSON.stringify(watched));
+    }, [watched]);
 
     useEffect(
         function () {
@@ -140,7 +153,7 @@ function MovieDetails({selectedId, onCloseMovie, onAddWatched, watched}) {
             poster,
             imdbRating: Number(imdbRating),
             userRating: userRating,
-            rutime: Number(runtime.split(" ").at(0)),
+            runtime: Number(runtime.split(" ").at(0)),
         };
         onAddWatched(newWatched);
     }
@@ -369,6 +382,24 @@ function Movie({movie, onSelect}) {
 }
 
 function Search({query, setQuery, handleCloseMovie}) {
+    const inputElement = useRef(null);
+
+    useEffect(() => {
+        inputElement.current.focus();
+    }, []);
+
+    useEffect(() => {
+        const enterPress = (e) => {
+            if (e.code === "Enter") {
+                inputElement.current.focus();
+                setQuery("");
+            }
+        }
+
+        document.addEventListener("keydown", enterPress);
+        // return document.removeEventListener("keydown", enterPress);
+    }, []);
+
     return (
         <input
             type="text"
@@ -379,6 +410,7 @@ function Search({query, setQuery, handleCloseMovie}) {
                 handleCloseMovie();
                 setQuery(e.target.value)
             }}
+            ref={inputElement}
         />
     );
 }
