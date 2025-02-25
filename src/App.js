@@ -3,6 +3,7 @@ import "./index.css";
 import StarRating from "./star";
 import {useMovies} from "./useMovies";
 import {useLocalStorageState} from "./useLocalStorageState";
+import {useKey} from "./useKey";
 
 const API = "f4a95b19";
 const average = (arr) =>
@@ -150,18 +151,20 @@ function MovieDetails({selectedId, onCloseMovie, onAddWatched, watched}) {
         [title]
     );
 
-    useEffect(function () {
-        function keyPress(e) {
-            if (e.code === "Escape") {
-                onCloseMovie();
-            }
-        }
+    useKey("Escape", onCloseMovie);
 
-        document.addEventListener("keydown", keyPress);
-        return () => {
-            document.removeEventListener("keydown", keyPress)
-        };
-    }, []);
+    // useEffect(function () {
+    //     function keyPress(e) {
+    //         if (e.code === "Escape") {
+    //             onCloseMovie();
+    //         }
+    //     }
+    //
+    //     document.addEventListener("keydown", keyPress);
+    //     return () => {
+    //         document.removeEventListener("keydown", keyPress)
+    //     };
+    // }, []);
 
     return isLoading ? (
         <Loading/>
@@ -354,17 +357,23 @@ function Search({query, setQuery, handleCloseMovie}) {
         inputElement.current.focus();
     }, []);
 
-    useEffect(() => {
-        const enterPress = (e) => {
-            if (document.activeElement === inputElement.current) return;
-            if (e.code === "Enter") {
-                inputElement.current.focus();
-                setQuery("");
-            }
-        }
-        document.addEventListener("keydown", enterPress);
-        return () => document.removeEventListener("keydown", enterPress);
-    }, []);
+    useKey("Enter", function () {
+        if (document.activeElement === inputElement.current) return;
+        inputElement.current.focus();
+        setQuery("");
+    })
+
+    // useEffect(() => {
+    //     const enterPress = (e) => {
+    //         if (document.activeElement === inputElement.current) return;
+    //         if (e.code === "Enter") {
+    //             inputElement.current.focus();
+    //             setQuery("");
+    //         }
+    //     }
+    //     document.addEventListener("keydown", enterPress);
+    //     return () => document.removeEventListener("keydown", enterPress);
+    // }, []);
 
     return (
         <input
